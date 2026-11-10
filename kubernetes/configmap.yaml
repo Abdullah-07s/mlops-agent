@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inference-config
+  namespace: mlops-agent
+  labels:
+    app: mlops-inference
+data:
+  APP_VERSION: "0.1.0"
+  MODEL_RUN_ID: "REPLACE_WITH_MLFLOW_RUN_ID"
+  LOG_LEVEL: "INFO"
+  MODEL_PATH: "/app/models/model.pkl"

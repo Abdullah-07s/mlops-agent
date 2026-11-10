@@ -1,0 +1,5 @@
+# Pinned ML stack: used by training (local + Airflow) AND by the inference image,
+# so the pickled model is always loaded with the library versions that created it.
+numpy==2.1.3
+scikit-learn==1.5.2
+pandas==2.2.3
