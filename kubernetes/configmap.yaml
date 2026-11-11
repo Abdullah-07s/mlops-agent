@@ -7,6 +7,6 @@ metadata:
     app: mlops-inference
 data:
   APP_VERSION: "0.1.0"
-  MODEL_RUN_ID: "REPLACE_WITH_MLFLOW_RUN_ID"
+  MODEL_RUN_ID: "7fe6537ba816489b87398329d0a03c44"
   LOG_LEVEL: "INFO"
   MODEL_PATH: "/app/models/model.pkl"

@@ -1,24 +1,29 @@
-# Place next to the official Airflow 3 docker-compose.yaml (see GUIDE step 5).
-# `docker compose` merges this file automatically. Service names follow the official
-# Airflow 3 compose file; if yours differ, adjust the keys below.
-x-project: &project
-  environment:
+x-common: &common
+  environment: &common-env
     PROJECT_ROOT: /opt/airflow/project
     PYTHONPATH: /opt/airflow/project
     MLFLOW_TRACKING_URI: http://host.docker.internal:5000
     MLFLOW_EXPERIMENT_NAME: mlops-agent-classifier
     MIN_METRIC_THRESHOLD: "0.80"
-    # Demo-only convenience (installs on every start). Drop the pins if pip reports conflicts.
-    _PIP_ADDITIONAL_REQUIREMENTS: "mlflow scikit-learn==1.5.2 pandas==2.2.3 numpy==2.1.3 joblib pyyaml"
   volumes:
     - ../dags:/opt/airflow/dags
     - ..:/opt/airflow/project
   extra_hosts:
     - "host.docker.internal:host-gateway"
 
+x-ml-env: &ml-env
+  <<: *common-env
+  _PIP_ADDITIONAL_REQUIREMENTS: "mlflow scikit-learn==1.5.2 pandas==2.2.3 numpy==2.1.3 joblib pyyaml"
+
 services:
-  airflow-apiserver: *project
-  airflow-scheduler: *project
-  airflow-dag-processor: *project
-  airflow-worker: *project
-  airflow-triggerer: *project
+  airflow-apiserver: *common
+  airflow-triggerer: *common
+  airflow-scheduler:
+    <<: *common
+    environment: *ml-env
+  airflow-dag-processor:
+    <<: *common
+    environment: *ml-env
+  airflow-worker:
+    <<: *common
+    environment: *ml-env
