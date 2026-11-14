@@ -190,3 +190,10 @@ def test_agent_never_loops_forever(settings, make_agent):
 
     agent, _ = make_agent(llm=Looper(settings))
     assert len(agent.handle(ChatRequest(message="x")).tool_trace) == 1
+
+
+def test_tie_between_best_runs_is_shown_as_uncertainty(make_agent):
+    runs = [fakes.make_run("tie-a", 0.97, start=2), fakes.make_run("tie-b", 0.97, start=1)]
+    agent, _ = make_agent(runs=runs)
+    resp = agent.handle(ChatRequest(message="Compare the last 2 training runs and recommend the best candidate based on F1 score"))
+    assert any("tie at 0.9700" in u for u in resp.uncertainties)

@@ -96,6 +96,14 @@ def _caveats(run: dict[str, Any]) -> list[str]:
         notes.append("Run has no dvc_md5 tag, so its dataset version cannot be established from MLflow.")
     return notes
 
+def _tie_caveat(scored: list[tuple[float, Any]], metric: str) -> list[str]:
+    if len(scored) < 2 or scored[0][0] != scored[1][0]:
+        return []
+    n = sum(1 for value, _ in scored if value == scored[0][0])
+    return [
+        f"{n} runs tie at {scored[0][0]:.4f} on {metric}; the leader was chosen by recency "
+        "(newest first), not by a margin."
+    ]
 
 def build_tools(settings: Settings, client_factory: Callable[[], Any] | None = None) -> list[ToolSpec]:
     factory = client_factory or default_client_factory(settings)
@@ -180,7 +188,7 @@ def build_tools(settings: Settings, client_factory: Callable[[], Any] | None = N
             "best_value": scored[0][0],
             "best": best,
             "ranking": [{"run_id": r.info.run_id, "value": v} for v, r in scored[:5]],
-            "caveats": _caveats(best),
+            "caveats": _caveats(best) + _tie_caveat(scored, metric),    
         }
 
     def compare_runs(a: CompareRunsArgs) -> dict[str, Any]:
@@ -207,7 +215,9 @@ def build_tools(settings: Settings, client_factory: Callable[[], Any] | None = N
             "table": [{"run_id": r.info.run_id, "value": v} for v, r in scored],
             "winner": winner,
             "winner_value": scored[0][0] if scored else None,
-            "caveats": _caveats(winner) if winner else [f"No compared run logged metric '{metric}'."],
+            "caveats": (_caveats(winner) + _tie_caveat(scored, metric))
+            if winner
+            else [f"No compared run logged metric '{metric}'."],
         }
 
     def registry_info(a: RegistryArgs) -> dict[str, Any]:

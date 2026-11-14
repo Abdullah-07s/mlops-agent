@@ -149,6 +149,13 @@ def uncertainties_from(history: list[ToolResult]) -> list[str]:
     out = []
     for r in history:
         if r.ok:
+            # Surface tool-level caveats (ties, missing gate/provenance); the generic
+            # "metric is not approval" note is already a recommendation.
+            out += [
+                f"{r.tool}: {c}"
+                for c in r.data.get("caveats", [])
+                if not c.startswith("Metric rank alone")
+            ]
             continue
         label = {
             ToolStatus.TIMEOUT: "timed out",

@@ -57,3 +57,12 @@ def test_registry_info(settings):
     r.register_all(mlflow_tools.build_tools(settings, client_factory=lambda: client))
     res = r.execute(ToolCall(tool="mlflow_get_registry_info"), CTX)
     assert res.data["models"][0]["versions"][0]["aliases"] == ["candidate"]
+
+
+def test_ties_are_reported_as_caveat(settings):
+    tied = [make_run("x1", 0.97, start=1), make_run("x2", 0.97, start=2), make_run("x3", 0.90, start=3)]
+    best = call(settings, tied, "mlflow_best_run")
+    assert best.data["best"]["run_id"] == "x2"  # newest of the tied runs
+    assert any("2 runs tie" in c for c in best.data["caveats"])
+    cmp_ = call(settings, tied, "mlflow_compare_runs", last_n=3)
+    assert any("tie" in c for c in cmp_.data["caveats"])
