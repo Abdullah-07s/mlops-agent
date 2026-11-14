@@ -60,3 +60,5 @@ ruff check .
 pytest
 ```
 All external services are mocked; no cluster, Airflow, MLflow server or API key is needed.
+
+Data note: the DVC remote used in the lab is a local folder (../dvc-storage). Regenerate data with python -m training.make_dataset --rows 500 and run dvc repro.
